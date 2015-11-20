@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("xmlrpc-universal")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyDescription("This is a fun description")]
+[assembly: AssemblyConfiguration("This is the configuration")]
+[assembly: AssemblyCompany("Gateway Apps, LLC")]
 [assembly: AssemblyProduct("xmlrpc-universal")]
 [assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]

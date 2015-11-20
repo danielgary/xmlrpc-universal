@@ -105,6 +105,7 @@
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
     <None Include="project.json" />
+    <None Include="xmlrpc-universal.nuspec" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AttributeHelper.cs" />
@@ -149,9 +150,7 @@
     <Compile Include="XmlRpcUrlAttribute.cs" />
     <Compile Include="XmlRpcXmlReader.cs" />
     <Compile Include="XmlRpcXmlWriter.cs" />
-    <Content Include="Properties\xmlrpc_universal.rd.xml" />
   </ItemGroup>
-
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
