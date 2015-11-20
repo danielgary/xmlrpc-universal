@@ -81,9 +81,9 @@ namespace StateNameUniversalClient
 		[XmlRpcMethod("examples.getStateName")]
 		public async Task<String> GetName(int number)
 		{
-			var methodInfo = GetType().GetTypeInfo().GetDeclaredMethod("GetName");
-			var result = await this.InvokeAsync<String>(methodInfo, new object[] { number });
-			return result.ToString();
+
+			return await this.InvokeAsync<String>(new object[] { number });
+
 		}
 
 
