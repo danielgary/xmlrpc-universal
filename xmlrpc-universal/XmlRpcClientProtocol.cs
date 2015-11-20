@@ -98,11 +98,6 @@ namespace Windows.Data.Xml.Rpc
 			return await InvokeAsync<T>(methodInfo, Parameters);
 		}
 
-		//public async Task<T> InvokeAsync<T>([CallerMemberName] string methodName = "", params object[] parameters)
-		//{
-		//	var methodInfo = GetType().GetTypeInfo().GetDeclaredMethod(methodName);
-		//	return await InvokeAsync<T>(methodInfo, parameters);
-		//}
 
 
 		public async Task<T> InvokeAsync<T>(
@@ -123,14 +118,7 @@ namespace Windows.Data.Xml.Rpc
       throw new NotSupportedException();
 #else
 
-			_responseHeaders = null;
-			_responseCookies = null;
-			WebRequest webReq = null;
 
-
-
-
-			object reto = null;
 			try
 			{
 				string useUrl = GetEffectiveUrl(clientObj);
@@ -139,7 +127,7 @@ namespace Windows.Data.Xml.Rpc
 				HttpRequestMessage message = new HttpRequestMessage(HttpMethod.Post, new Uri(useUrl));
 
 
-				webReq = GetWebRequest(new Uri(useUrl));
+
 				XmlRpcRequest req = MakeXmlRpcRequest2(message, mi, parameters,
 				  clientObj, _xmlRpcMethod, _id);
 				SetProperties2(message);
@@ -147,99 +135,41 @@ namespace Windows.Data.Xml.Rpc
 #if (!COMPACT_FRAMEWORK && !SILVERLIGHT && !WINDOWS_UWP)
 				SetClientCertificates(ClientCertificates, webReq);
 #endif
-				Stream serStream = null;
-				Stream reqStream = null;
+
 				bool logging = (RequestEvent != null);
 
 
 
 
 
-				//if (!logging)
-				//serStream = reqStream = new MemoryStream();
-				//else
-				//	serStream = new MemoryStream(2000);
 				try
 				{
 					var serializer = new XmlRpcRequestSerializer(XmlRpcFormatSettings);
 					var content = serializer.SerializeRequestToString(req);
 					message.Content = new HttpStringContent(content);
-					//if (logging)
-					//{
-					//	reqStream = await webReq.GetRequestStreamAsync();
-					//	serStream.Position = 0;
-					//	Util.CopyStream(serStream, reqStream);
-					//	reqStream.Flush();
-					//	serStream.Position = 0;
-					//	OnRequest(new XmlRpcRequestEventArgs(req.proxyId, req.number,
-					//	  serStream));
-					//}
+
+
+
+					var httpResponse = await httpClient.SendRequestAsync(message);
+					var rpcResponse = await ReadResponseAsync(req, httpResponse);
+					return (T)rpcResponse.retVal;
+
+
 				}
 				finally
 				{
-					if (reqStream != null)
-					{
-						reqStream.Dispose();
-
-					}
 
 				}
 
 
 
-				var httpResponse = await httpClient.SendRequestAsync(message);
-				var rpcResponse = await ReadResponseAsync(req, httpResponse);
-				return (T)rpcResponse.retVal;
 
-
-				//				HttpWebResponse webResp = await GetWebResponse(webReq) as HttpWebResponse;
-				//				_responseCookies = webResp.Cookies;
-				//				_responseHeaders = webResp.Headers;
-				//				Stream respStm = null;
-				//				Stream deserStream;
-				//				logging = (ResponseEvent != null);
-				//				try
-				//				{
-				//					respStm = webResp.GetResponseStream();
-				//#if (!COMPACT_FRAMEWORK && !FX1_0 && !WINDOWS_UWP)
-				//					respStm = MaybeDecompressStream((HttpWebResponse)webResp,
-				//					  respStm);
-				//#endif
-				//					if (!logging)
-				//					{
-				//						deserStream = respStm;
-				//					}
-				//					else
-				//					{
-				//						deserStream = new MemoryStream(2000);
-				//						Util.CopyStream(respStm, deserStream);
-				//						deserStream.Flush();
-				//						deserStream.Position = 0;
-				//					}
-				//					if (logging)
-				//					{
-				//						OnResponse(new XmlRpcResponseEventArgs(req.proxyId, req.number,
-				//						  deserStream));
-				//						deserStream.Position = 0;
-				//					}
-				//					XmlRpcResponse resp = ReadResponse(req, webResp, deserStream);
-				//					reto = resp.retVal;
-				//				}
-				//				finally
-				//				{
-				//					if (respStm != null)
-				//					{
-				//						respStm.Dispose();
-				//					}
-
-				//				}
 			}
 			finally
 			{
-				if (webReq != null)
-					webReq = null;
+
 			}
-			//return reto;
+
 #endif
 		}
 
@@ -642,268 +572,6 @@ namespace Windows.Data.Xml.Rpc
 			return mi;
 		}
 
-		//		public IAsyncResult BeginInvoke(
-		//		  MethodBase mb,
-		//		  object[] parameters,
-		//		  AsyncCallback callback,
-		//		  object outerAsyncState)
-		//		{
-		//			return BeginInvoke(mb as MethodInfo, parameters, this, callback,
-		//			  outerAsyncState);
-		//		}
-
-		//		public IAsyncResult BeginInvoke(
-		//		  MethodInfo mi,
-		//		  object[] parameters,
-		//		  AsyncCallback callback,
-		//		  object outerAsyncState)
-		//		{
-		//			return BeginInvoke(mi, parameters, this, callback,
-		//			  outerAsyncState);
-		//		}
-
-		//		public IAsyncResult BeginInvoke(
-		//		  string methodName,
-		//		  object[] parameters,
-		//		  object clientObj,
-		//		  AsyncCallback callback,
-		//		  object outerAsyncState)
-		//		{
-		//			MethodInfo mi = GetMethodInfoFromName(clientObj, methodName, parameters);
-		//			return BeginInvoke(mi, parameters, this, callback,
-		//			  outerAsyncState);
-		//		}
-
-		//		public IAsyncResult BeginInvoke(
-		//		  MethodInfo mi,
-		//		  object[] parameters,
-		//		  object clientObj,
-		//		  AsyncCallback callback,
-		//		  object outerAsyncState)
-		//		{
-		//			string useUrl = GetEffectiveUrl(clientObj);
-		//			WebRequest webReq = GetWebRequest(new Uri(useUrl));
-		//			XmlRpcRequest xmlRpcReq = MakeXmlRpcRequest(webReq, mi,
-		//			  parameters, clientObj, _xmlRpcMethod, _id);
-		//			SetProperties(webReq);
-		//			SetRequestHeaders(Headers, webReq);
-		//#if (!COMPACT_FRAMEWORK && !SILVERLIGHT && !WINDOWS_UWP)
-		//			SetClientCertificates(ClientCertificates, webReq);
-		//#endif
-
-
-		//			this.InvokeAsync(mi, parameters);
-
-		//			XmlRpcAsyncResult asr = new XmlRpcAsyncResult(this, xmlRpcReq, XmlRpcFormatSettings,
-		//			  webReq, callback, outerAsyncState, 0);
-		//			webReq.BeginGetRequestStream(new AsyncCallback(GetRequestStreamCallback),
-		//			  asr);
-		//			if (!asr.IsCompleted)
-		//				asr.CompletedSynchronously = false;
-		//			return asr;
-		//		}
-
-		//static void GetRequestStreamCallback(IAsyncResult asyncResult)
-		//{
-		//	XmlRpcAsyncResult clientResult
-		//	  = (XmlRpcAsyncResult)asyncResult.AsyncState;
-		//	clientResult.CompletedSynchronously = asyncResult.CompletedSynchronously;
-		//	try
-		//	{
-		//		Stream serStream = null;
-		//		Stream reqStream = null;
-		//		bool logging = (clientResult.ClientProtocol.RequestEvent != null);
-		//		if (!logging)
-		//		{
-		//			serStream = reqStream
-		//			  = clientResult.Request.EndGetRequestStream(asyncResult);
-		//		}
-		//		else
-		//			serStream = new MemoryStream(2000);
-		//		try
-		//		{
-		//			XmlRpcRequest req = clientResult.XmlRpcRequest;
-		//			var serializer = new XmlRpcRequestSerializer();
-		//			if (clientResult.XmlRpcFormatSettings.XmlEncoding != null)
-		//				serializer.XmlEncoding = clientResult.XmlRpcFormatSettings.XmlEncoding;
-		//			serializer.UseEmptyElementTags = clientResult.XmlRpcFormatSettings.UseEmptyElementTags;
-		//			serializer.UseEmptyParamsTag = clientResult.XmlRpcFormatSettings.UseEmptyParamsTag;
-		//			serializer.UseIndentation = clientResult.XmlRpcFormatSettings.UseIndentation;
-		//			serializer.Indentation = clientResult.XmlRpcFormatSettings.Indentation;
-		//			serializer.UseIntTag = clientResult.XmlRpcFormatSettings.UseIntTag;
-		//			serializer.UseStringTag = clientResult.XmlRpcFormatSettings.UseStringTag;
-		//			serializer.SerializeRequest(serStream, req);
-		//			if (logging)
-		//			{
-		//				reqStream = clientResult.Request.EndGetRequestStream(asyncResult);
-		//				serStream.Position = 0;
-		//				Util.CopyStream(serStream, reqStream);
-		//				reqStream.Flush();
-		//				serStream.Position = 0;
-		//				clientResult.ClientProtocol.OnRequest(
-		//				  new XmlRpcRequestEventArgs(req.proxyId, req.number, serStream));
-		//			}
-		//		}
-		//		finally
-		//		{
-		//			if (reqStream != null)
-		//				reqStream.Dispose();
-		//		}
-		//		clientResult.Request.BeginGetResponse(
-		//		  new AsyncCallback(GetResponseCallback), clientResult);
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		ProcessAsyncException(clientResult, ex);
-		//	}
-		//}
-
-		//static void GetResponseCallback(IAsyncResult asyncResult)
-		//{
-		//	XmlRpcAsyncResult result = (XmlRpcAsyncResult)asyncResult.AsyncState;
-		//	result.CompletedSynchronously = asyncResult.CompletedSynchronously;
-		//	try
-		//	{
-		//		result.Response = result.ClientProtocol.GetWebResponse(result.Request,
-		//		  asyncResult);
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		ProcessAsyncException(result, ex);
-		//		if (result.Response == null)
-		//			return;
-		//	}
-		//	ReadAsyncResponse(result);
-		//}
-
-		//static void ReadAsyncResponse(XmlRpcAsyncResult result)
-		//{
-		//	if (result.Response.ContentLength == 0)
-		//	{
-		//		result.Complete();
-		//		return;
-		//	}
-		//	try
-		//	{
-		//		result.ResponseStream = result.Response.GetResponseStream();
-		//		ReadAsyncResponseStream(result);
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		ProcessAsyncException(result, ex);
-		//	}
-		//}
-
-		//static async void ReadAsyncResponseStream(XmlRpcAsyncResult result)
-		//{
-		//	int bytesReceived = 0;
-
-
-
-
-		//	result.ResponseStream = new MemoryStream();
-		//	do
-		//	{
-		//		byte[] buff = result.Buffer;
-		//		long contLen = result.Response.ContentLength;
-		//		if (buff == null)
-		//		{
-		//			if (contLen == -1)
-		//				result.Buffer = new Byte[1024];
-		//			else
-		//				result.Buffer = new Byte[contLen];
-		//		}
-		//		else
-		//		{
-		//			if (contLen != -1 && contLen > result.Buffer.Length)
-		//				result.Buffer = new Byte[contLen];
-		//		}
-		//		buff = result.Buffer;
-		//		bytesReceived += await result.ResponseStream.ReadAsync(buff, 0, buff.Length);
-
-
-		//		await result.ResponseStream.WriteAsync(buff, 0, bytesReceived);
-
-		//	}
-		//	while (bytesReceived < result.Response.ContentLength);
-
-		//	result.Complete();
-
-
-		//	//while (!(ProcessAsyncResponseStreamResult(result, asyncResult)));
-		//}
-
-		//static bool ProcessAsyncResponseStreamResult(XmlRpcAsyncResult result,
-		//  IAsyncResult asyncResult)
-		//{
-		//	int endReadLen = result.ResponseStream.EndRead(asyncResult);
-		//	long contLen = result.Response.ContentLength;
-		//	bool completed;
-		//	if (endReadLen == 0)
-		//		completed = true;
-		//	else if (contLen > 0 && endReadLen == contLen)
-		//	{
-		//		result.ResponseBufferedStream = new MemoryStream(result.Buffer);
-		//		completed = true;
-		//	}
-		//	else
-		//	{
-		//		if (result.ResponseBufferedStream == null)
-		//		{
-		//			result.ResponseBufferedStream = new MemoryStream(result.Buffer.Length);
-		//		}
-		//		result.ResponseBufferedStream.Write(result.Buffer, 0, endReadLen);
-		//		completed = false;
-		//	}
-		//	if (completed)
-		//		result.Complete();
-		//	return completed;
-		//}
-
-
-		//static void ReadResponseCallback(IAsyncResult asyncResult)
-		//{
-		//	XmlRpcAsyncResult result = (XmlRpcAsyncResult)asyncResult.AsyncState;
-		//	result.CompletedSynchronously = asyncResult.CompletedSynchronously;
-		//	if (asyncResult.CompletedSynchronously)
-		//		return;
-		//	try
-		//	{
-		//		bool completed = ProcessAsyncResponseStreamResult(result, asyncResult);
-		//		if (!completed)
-		//			ReadAsyncResponseStream(result);
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		ProcessAsyncException(result, ex);
-		//	}
-		//}
-
-		//static void ProcessAsyncException(XmlRpcAsyncResult clientResult,
-		//  Exception ex)
-		//{
-		//	WebException webex = ex as WebException;
-		//	if (webex != null && webex.Response != null)
-		//	{
-		//		clientResult.Response = webex.Response;
-		//		return;
-		//	}
-		//	if (clientResult.IsCompleted)
-		//		throw new Exception("error during async processing");
-		//	clientResult.Complete(ex);
-		//}
-
-		public object EndInvoke(
-		  IAsyncResult asr)
-		{
-			return EndInvoke(asr, null);
-		}
-
-		public T EndInvoke<T>(IAsyncResult asr)
-		{
-			return (T)EndInvoke(asr, typeof(T));
-		}
-
 		public object EndInvoke(IAsyncResult asr, Type returnType)
 		{
 			object reto = null;
@@ -965,19 +633,7 @@ namespace Windows.Data.Xml.Rpc
 			return (string[])await InvokeAsync<string[]>(new Object[0]);
 		}
 
-		//[XmlRpcMethod("system.listMethods")]
-		//public IAsyncResult BeginSystemListMethods(
-		//  AsyncCallback Callback,
-		//  object State)
-		//{
-		//	return BeginInvoke("SystemListMethods", new object[0], this, Callback,
-		//	  State);
-		//}
 
-		//public string[] EndSystemListMethods(IAsyncResult AsyncResult)
-		//{
-		//	return (string[])EndInvoke(AsyncResult);
-		//}
 
 		[XmlRpcMethod("system.methodSignature")]
 		public async Task<object[]> SystemMethodSignatureAsync(string MethodName)
@@ -986,20 +642,7 @@ namespace Windows.Data.Xml.Rpc
 			  new Object[] { MethodName });
 		}
 
-		//[XmlRpcMethod("system.methodSignature")]
-		//public IAsyncResult BeginSystemMethodSignature(
-		//  string MethodName,
-		//  AsyncCallback Callback,
-		//  object State)
-		//{
-		//	return BeginInvoke("SystemMethodSignature",
-		//	  new Object[] { MethodName }, this, Callback, State);
-		//}
 
-		//public Array EndSystemMethodSignature(IAsyncResult AsyncResult)
-		//{
-		//	return (Array)EndInvoke(AsyncResult);
-		//}
 
 		[XmlRpcMethod("system.methodHelp")]
 		public async Task<string> SystemMethodHelpAsync(string MethodName)
@@ -1007,21 +650,6 @@ namespace Windows.Data.Xml.Rpc
 			return (string)await InvokeAsync<string>(
 			  new Object[] { MethodName });
 		}
-
-		//[XmlRpcMethod("system.methodHelp")]
-		//public IAsyncResult BeginSystemMethodHelp(
-		//  string MethodName,
-		//  AsyncCallback Callback,
-		//  object State)
-		//{
-		//	return BeginInvoke("SystemMethodHelp",
-		//	  new Object[] { MethodName }, this, Callback, State);
-		//}
-
-		//public string EndSystemMethodHelp(IAsyncResult AsyncResult)
-		//{
-		//	return (string)EndInvoke(AsyncResult);
-		//}
 
 		/// <summary>
 		/// Required method for Designer support - do not modify
@@ -1037,26 +665,6 @@ namespace Windows.Data.Xml.Rpc
 			return req;
 		}
 
-		protected async virtual Task<WebResponse> GetWebResponse(WebRequest request)
-		{
-#if (SILVERLIGHT)
-      throw new NotSupportedException();
-#else
-			WebResponse ret = null;
-			try
-			{
-
-				ret = await request.GetResponseAsync();
-			}
-			catch (WebException ex)
-			{
-				if (ex.Response == null)
-					throw;
-				ret = ex.Response;
-			}
-			return ret;
-#endif
-		}
 
 #if (!COMPACT_FRAMEWORK && !FX1_0 && !SILVERLIGHT && !WINDOWS_UWP)
 		// support for gzip and deflate
@@ -1106,10 +714,6 @@ namespace Windows.Data.Xml.Rpc
 			}
 		}
 
-		internal bool LogResponse
-		{
-			get { return ResponseEvent != null; }
-		}
 
 		protected virtual void OnResponse(XmlRpcResponseEventArgs e)
 		{
@@ -1119,10 +723,7 @@ namespace Windows.Data.Xml.Rpc
 			}
 		}
 
-		internal void InternalOnResponse(XmlRpcResponseEventArgs e)
-		{
-			OnResponse(e);
-		}
+
 	}
 
 	//#if (COMPACT_FRAMEWORK && )
