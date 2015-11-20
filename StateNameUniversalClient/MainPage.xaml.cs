@@ -78,7 +78,7 @@ namespace StateNameUniversalClient
 	[XmlRpcUrl("http://www.cookcomputing.com/xmlrpcsamples/RPC2.ashx")]
 	public class StateNameProxy : XmlRpcClientProtocol
 	{
-		[XmlRpcBegin("examples.getStateName")]
+		[XmlRpcMethod("examples.getStateName")]
 		public async Task<String> GetName(int number)
 		{
 			var methodInfo = GetType().GetTypeInfo().GetDeclaredMethod("GetName");
