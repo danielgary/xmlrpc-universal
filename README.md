@@ -1,7 +1,17 @@
 Based on XMLRPC dot NET by Charles Cook
 Source: http://xml-rpc.net/ and https://code.google.com/p/xmlrpcnet/
 
+To install in your project:
+```sh
+PM> Install-Package xmlrpc-universal
+```
+
+
+
 XMLRPC-Universal is a library for consuming XML RPC services from a Windows UWP application.  For each web service, you should create a Proxy class that looks like this:
+
+
+
 
 ```cs
 using Windows.Data.Xml.Rpc;
