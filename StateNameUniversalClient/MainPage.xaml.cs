@@ -32,6 +32,10 @@ namespace StateNameUniversalClient
 
 		private async void OnButtonClick(object sender, RoutedEventArgs e)
 		{
+
+
+			await new ForumsService().GetLatestTopic();
+
 			Output.Visibility = Visibility.Collapsed;
 			Error.Visibility = Visibility.Collapsed;
 			int number;
@@ -72,7 +76,16 @@ namespace StateNameUniversalClient
 
 	}
 
+	[XmlRpcUrl("http://forums.windowscentral.com/mobiquo/mobiquo.php")]
+	public class ForumsService : XmlRpcClientProtocol
+	{
+		[XmlRpcMethod("get_latest_topic")]
+		public async Task<String> GetLatestTopic()
+		{
+			return await InvokeAsync<String>(new Object[] { });
+		}
 
+	}
 
 
 	[XmlRpcUrl("http://www.cookcomputing.com/xmlrpcsamples/RPC2.ashx")]
